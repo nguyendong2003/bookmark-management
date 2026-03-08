@@ -52,7 +52,7 @@ func TestPasswordEndpoint(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			app := api.New()
+			app := api.New(&api.Config{})
 			rec := tc.setupTestHttp(app)
 
 			assert.Equal(t, tc.expectedStatus, rec.Code)

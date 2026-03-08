@@ -3,7 +3,12 @@ package main
 import "github.com/nguyendong2003/bookmark-management/internal/api"
 
 func main() {
-	app := api.New()
+	cfg, err := api.NewConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	app := api.New(cfg)
 	if err := app.Start(); err != nil {
 		panic(err)
 	}
