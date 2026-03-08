@@ -9,7 +9,6 @@ import (
 
 type Password interface {
 	GenPass(c *gin.Context)
-	GenPassForMux(w http.ResponseWriter, r *http.Request)
 }
 
 type passwordHandler struct {
@@ -33,17 +32,4 @@ func (h *passwordHandler) GenPass(c *gin.Context) {
 	c.String(http.StatusOK, password)
 
 	// c.JSON(http.StatusOK, gin.H{"password": password})
-}
-
-// Đoạn code này mô tả trường hợp nếu thay đổi gin bằng framework khác (ở đây là mux)
-func (h *passwordHandler) GenPassForMux(w http.ResponseWriter, r *http.Request) {
-	password, err := h.passwordService.GeneratePassword()
-	if err != nil {
-		http.Error(w, "Failed to generate password", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(password))
 }
