@@ -42,4 +42,8 @@ func (a *api) registerEndpoint() {
 	passwordService := service.NewPassword()
 	passwordHandler := handler.NewPassword(passwordService)
 	a.app.GET("/gen-pass", passwordHandler.GenPass)
+
+	healthService := service.NewHealthCheck(a.cfg.ServiceName, a.cfg.InstanceID)
+	healthHandler := handler.NewHealthCheck(healthService)
+	a.app.GET("/health-check", healthHandler.CheckHealth)
 }
