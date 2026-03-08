@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nguyendong2003/bookmark-management/internal/handler"
 	"github.com/nguyendong2003/bookmark-management/internal/service"
@@ -8,6 +10,7 @@ import (
 
 type Engine interface {
 	Start() error
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
 
 type api struct {
@@ -26,6 +29,10 @@ func New() Engine {
 
 func (a *api) Start() error {
 	return a.app.Run(":8080")
+}
+
+func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	a.app.ServeHTTP(w, r)
 }
 
 func (a *api) registerEndpoint() {
