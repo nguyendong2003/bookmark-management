@@ -19,7 +19,7 @@ type api struct {
 	cfg *Config
 }
 
-func New(cfg *Config) Engine {
+func NewEngine(cfg *Config) Engine {
 	a := &api{
 		app: gin.New(),
 		cfg: cfg,
