@@ -12,6 +12,8 @@ const (
 )
 
 // Password interface represents the password service
+//
+//go:generate go run github.com/vektra/mockery/v2@latest --name Password --filename password_service.go
 type Password interface {
 	GeneratePassword() (string, error)
 }

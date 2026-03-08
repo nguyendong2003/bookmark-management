@@ -25,7 +25,7 @@ func (h *passwordHandler) GenPass(c *gin.Context) {
 	password, err := h.passwordService.GeneratePassword()
 	if err != nil {
 		// c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate password"})
-		c.String(http.StatusInternalServerError, "Failed to generate password")
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
