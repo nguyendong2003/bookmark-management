@@ -5,8 +5,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/nguyendong2003/bookmark-management/docs"
 	"github.com/nguyendong2003/bookmark-management/internal/handler"
 	"github.com/nguyendong2003/bookmark-management/internal/service"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Engine interface {
@@ -42,4 +45,5 @@ func (a *api) registerEndpoint() {
 	passwordService := service.NewPassword()
 	passwordHandler := handler.NewPassword(passwordService)
 	a.app.GET("/gen-pass", passwordHandler.GenPass)
+	a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

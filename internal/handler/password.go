@@ -21,6 +21,14 @@ func NewPassword(passwordService service.Password) Password {
 	}
 }
 
+// GenPass godoc
+// @Summary Generate a random password
+// @Description Generate a random password with specified criteria
+// @Tags Password
+// @Produce plain
+// @Success 200 {string} string "Generated password"
+// @Failure 500 {string} string "Failed to generate password"
+// @Router /gen-pass [get]
 func (h *passwordHandler) GenPass(c *gin.Context) {
 	password, err := h.passwordService.GeneratePassword()
 	if err != nil {
