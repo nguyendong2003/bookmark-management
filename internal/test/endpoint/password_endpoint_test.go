@@ -33,19 +33,6 @@ func TestPasswordEndpoint(t *testing.T) {
 			expectedStatus:  http.StatusOK,
 			expectedRespLen: 10,
 		},
-		{
-			name: "fail",
-
-			setupTestHttp: func(api api.Engine) *httptest.ResponseRecorder {
-				req := httptest.NewRequest(http.MethodGet, "/gen-pass", nil)
-				respRec := httptest.NewRecorder()
-				api.ServeHTTP(respRec, req)
-				return respRec
-			},
-
-			expectedStatus:  http.StatusOK,
-			expectedRespLen: 9,
-		},
 	}
 
 	for _, tc := range testCases {

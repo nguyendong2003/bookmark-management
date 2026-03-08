@@ -24,18 +24,6 @@ func TestPasswordService_GeneratePassword(t *testing.T) {
 			expectedLen: 10,
 			expectedErr: nil,
 		},
-		{
-			name: "short case",
-
-			expectedLen: 5,
-			expectedErr: nil,
-		},
-		{
-			name: "long case",
-
-			expectedLen: 20,
-			expectedErr: nil,
-		},
 	}
 
 	for _, tc := range testCases {

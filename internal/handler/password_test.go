@@ -46,22 +46,6 @@ func TestPasswordHandler_GenPass(t *testing.T) {
 			expectedResponse: "123456789",
 		},
 		{
-			name: "fail",
-
-			setupRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest(http.MethodGet, "/gen-pass", nil)
-			},
-
-			setupMockService: func() *mocks.Password {
-				serviceMock := mocks.NewPassword(t)
-				serviceMock.On("GeneratePassword").Return("123456789", nil)
-				return serviceMock
-			},
-
-			expectedStatus:   http.StatusOK,
-			expectedResponse: "12345678",
-		},
-		{
 			name: "internal server error",
 
 			setupRequest: func(ctx *gin.Context) {
@@ -74,10 +58,8 @@ func TestPasswordHandler_GenPass(t *testing.T) {
 				return serviceMock
 			},
 
-			expectedStatus: http.StatusInternalServerError,
-
-			// Giả sử serviceMock trả về error: "Failed Generate Password", nhưng expectedResponse: "Failed" nên testcase này fail
-			expectedResponse: "Failed",
+			expectedStatus:   http.StatusInternalServerError,
+			expectedResponse: "Failed Generate Password",
 		},
 	}
 
