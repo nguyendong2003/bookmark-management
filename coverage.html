@@ -61,7 +61,19 @@
 				
 				<option value="file2">github.com/nguyendong2003/bookmark-management/internal/handler/password.go (100.0%)</option>
 				
-				<option value="file3">github.com/nguyendong2003/bookmark-management/internal/service/password.go (87.5%)</option>
+				<option value="file3">github.com/nguyendong2003/bookmark-management/internal/handler/shortenurl.go (0.0%)</option>
+				
+				<option value="file4">github.com/nguyendong2003/bookmark-management/internal/repository/urlstorage.go (100.0%)</option>
+				
+				<option value="file5">github.com/nguyendong2003/bookmark-management/internal/service/password.go (87.5%)</option>
+				
+				<option value="file6">github.com/nguyendong2003/bookmark-management/internal/service/shortenurl.go (0.0%)</option>
+				
+				<option value="file7">github.com/nguyendong2003/bookmark-management/pkg/redis/client.go (0.0%)</option>
+				
+				<option value="file8">github.com/nguyendong2003/bookmark-management/pkg/redis/config.go (0.0%)</option>
+				
+				<option value="file9">github.com/nguyendong2003/bookmark-management/pkg/redis/mock.go (0.0%)</option>
 				
 				</select>
 			</div>
@@ -84,7 +96,9 @@ import (
         "github.com/gin-gonic/gin"
         _ "github.com/nguyendong2003/bookmark-management/docs"
         "github.com/nguyendong2003/bookmark-management/internal/handler"
+        "github.com/nguyendong2003/bookmark-management/internal/repository"
         "github.com/nguyendong2003/bookmark-management/internal/service"
+        "github.com/redis/go-redis/v9"
         swaggerFiles "github.com/swaggo/files"
         ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -94,35 +108,46 @@ type Engine interface {
         ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
 
-type api struct {
-        app *gin.Engine
-        cfg *Config
+type engine struct {
+        app         *gin.Engine
+        cfg         *Config
+        redisClient *redis.Client
 }
 
-func NewEngine(cfg *Config) Engine <span class="cov0" title="0">{
-        a := &amp;api{
-                app: gin.New(),
-                cfg: cfg,
+func NewEngine(cfg *Config, redisClient *redis.Client) Engine <span class="cov0" title="0">{
+        e := &amp;engine{
+                app:         gin.New(),
+                cfg:         cfg,
+                redisClient: redisClient,
         }
 
-        a.registerEndpoint()
+        e.initRoutes()
 
-        return a
+        return e
 }</span>
 
-func (a *api) Start() error <span class="cov0" title="0">{
-        return a.app.Run(fmt.Sprintf(":%s", a.cfg.AppPort))
+func (e *engine) Start() error <span class="cov0" title="0">{
+        return e.app.Run(fmt.Sprintf(":%s", e.cfg.AppPort))
 }</span>
 
-func (a *api) ServeHTTP(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
-        a.app.ServeHTTP(w, r)
+func (e *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        e.app.ServeHTTP(w, r)
 }</span>
 
-func (a *api) registerEndpoint() <span class="cov0" title="0">{
+func (e *engine) initRoutes() <span class="cov0" title="0">{
+        // create handlers
         passwordService := service.NewPassword()
         passwordHandler := handler.NewPassword(passwordService)
-        a.app.GET("/gen-pass", passwordHandler.GenPass)
-        a.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+        // urlstorage handler
+        urlStorage := repository.NewURLStorage(e.redisClient)
+        shortenURLService := service.NewShortenURL(urlStorage, passwordService)
+        shortenURLHandler := handler.NewShortenURL(shortenURLService)
+
+        // register handlers to endpoints
+        e.app.GET("/gen-pass", passwordHandler.GenPass)
+        e.app.POST("/shorten", shortenURLHandler.ShortenURL)
+        e.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }</span>
 </pre>
 		
@@ -136,8 +161,7 @@ type Config struct {
 
 func NewConfig(envPrefix string) (*Config, error) <span class="cov0" title="0">{
         cfg := &amp;Config{}
-        err := envconfig.Process(envPrefix, cfg)
-        if err != nil </span><span class="cov0" title="0">{
+        if err := envconfig.Process(envPrefix, cfg); err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
         <span class="cov0" title="0">return cfg, nil</span>
@@ -189,7 +213,94 @@ func (h *passwordHandler) GenPass(c *gin.Context) <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file3" style="display: none">package service
+		<pre class="file" id="file3" style="display: none">package handler
+
+import (
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+        "github.com/nguyendong2003/bookmark-management/internal/service"
+)
+
+type ShortenURL interface {
+        ShortenURL(c *gin.Context)
+}
+
+type shortenURLHandler struct {
+        shortenURLService service.ShortenURL
+}
+
+type shortenURLRequest struct {
+        URL string `json:"url" binding:"required"`
+}
+
+func NewShortenURL(shortenURLService service.ShortenURL) ShortenURL <span class="cov0" title="0">{
+        return &amp;shortenURLHandler{
+                shortenURLService: shortenURLService,
+        }
+}</span>
+
+// ShortenURL godoc
+// @Summary Shorten a URL
+// @Description Create a short key for the provided URL
+// @Tags ShortenURL
+// @Accept json
+// @Produce json
+// @Param request body shortenURLRequest true "URL to shorten"
+// @Success 200 {object} map[string]string "Shortened key"
+// @Failure 400 {object} map[string]string "Invalid input"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /shorten [post]
+func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov0" title="0">{
+        req := &amp;shortenURLRequest{}
+        if err := c.ShouldBindJSON(req); err != nil </span><span class="cov0" title="0">{
+                c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+                return
+        }</span>
+
+        <span class="cov0" title="0">key, err := h.shortenURLService.ShortenURL(c, req.URL)
+        if err != nil </span><span class="cov0" title="0">{
+                c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+                return
+        }</span>
+
+        <span class="cov0" title="0">c.JSON(http.StatusOK, gin.H{"key": key})</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package repository
+
+import (
+        "context"
+        "time"
+
+        "github.com/redis/go-redis/v9"
+)
+
+const (
+        urlExpTime = 24 * time.Hour
+)
+
+type URLStorage interface {
+        StoreURL(ctx context.Context, code, url string) error
+}
+
+type urlStorage struct {
+        redisClient *redis.Client
+}
+
+func NewURLStorage(redisClient *redis.Client) URLStorage <span class="cov8" title="1">{
+        return &amp;urlStorage{
+                redisClient: redisClient,
+        }
+}</span>
+
+func (s *urlStorage) StoreURL(ctx context.Context, code, url string) error <span class="cov8" title="1">{
+        return s.redisClient.Set(ctx, code, url, urlExpTime).Err()
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package service
 
 import (
         "bytes"
@@ -229,6 +340,104 @@ func (s *passwordService) GeneratePassword() (string, error) <span class="cov8" 
 
         <span class="cov8" title="1">return strBuilder.String(), nil</span>
 }
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package service
+
+import (
+        "context"
+
+        "github.com/nguyendong2003/bookmark-management/internal/repository"
+)
+
+type ShortenURL interface {
+        ShortenURL(ctx context.Context, url string) (string, error)
+}
+
+type shortenURLService struct {
+        urlStorage repository.URLStorage
+        codeGen    Password
+}
+
+func NewShortenURL(urlStorage repository.URLStorage, codeGen Password) ShortenURL <span class="cov0" title="0">{
+        return &amp;shortenURLService{
+                urlStorage: urlStorage,
+                codeGen:    codeGen,
+        }
+}</span>
+
+func (s *shortenURLService) ShortenURL(ctx context.Context, url string) (string, error) <span class="cov0" title="0">{
+        // gen code
+        code, err := s.codeGen.GeneratePassword()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+
+        // call repo to save code and url
+        <span class="cov0" title="0">err = s.urlStorage.StoreURL(ctx, code, url)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+
+        <span class="cov0" title="0">return code, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package redis
+
+import "github.com/redis/go-redis/v9"
+
+func NewClient(envPrefix string) (*redis.Client, error) <span class="cov0" title="0">{
+        cfg, err := newConfig(envPrefix)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">client := redis.NewClient(&amp;redis.Options{
+                Addr:     cfg.Address,
+                Password: cfg.Password,
+                DB:       cfg.DB,
+        })
+
+        return client, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package redis
+
+import "github.com/kelseyhightower/envconfig"
+
+type config struct {
+        Address  string `default:"localhost:6379" envConfig:"REDIS_ADDRESS"`
+        Password string `default:"" envConfig:"REDIS_PASSWORD"`
+        DB       int    `default:"0" envConfig:"REDIS_DB"`
+}
+
+func newConfig(envPrefix string) (*config, error) <span class="cov0" title="0">{
+        cfg := &amp;config{}
+        if err := envconfig.Process(envPrefix, cfg); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return cfg, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package redis
+
+import (
+        "testing"
+
+        "github.com/alicebob/miniredis/v2"
+        "github.com/redis/go-redis/v9"
+)
+
+// InitMockRedis initializes a mock Redis client for testing purposes.
+func InitMockRedis(t *testing.T) *redis.Client <span class="cov0" title="0">{
+        mock := miniredis.RunT(t)
+        return redis.NewClient(&amp;redis.Options{
+                Addr: mock.Addr(),
+        })
+}</span>
 </pre>
 		
 		</div>

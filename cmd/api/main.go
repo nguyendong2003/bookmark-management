@@ -1,6 +1,9 @@
 package main
 
-import "github.com/nguyendong2003/bookmark-management/internal/api"
+import (
+	"github.com/nguyendong2003/bookmark-management/internal/api"
+	redisPkg "github.com/nguyendong2003/bookmark-management/pkg/redis"
+)
 
 // @title Bookmark Management API
 // @version 1.0
@@ -13,7 +16,12 @@ func main() {
 		panic(err)
 	}
 
-	app := api.NewEngine(cfg)
+	redisClient, err := redisPkg.NewClient("")
+	if err != nil {
+		panic(err)
+	}
+
+	app := api.NewEngine(cfg, redisClient)
 	if err := app.Start(); err != nil {
 		panic(err)
 	}
