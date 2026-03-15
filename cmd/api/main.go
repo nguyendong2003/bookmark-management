@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/nguyendong2003/bookmark-management/internal/api"
+	"github.com/nguyendong2003/bookmark-management/pkg/logger"
 	redisPkg "github.com/nguyendong2003/bookmark-management/pkg/redis"
 )
 
@@ -11,6 +12,8 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
+	logger.SetLogLevel()
+
 	cfg, err := api.NewConfig("BOOKMARK_SERVICE")
 	if err != nil {
 		panic(err)

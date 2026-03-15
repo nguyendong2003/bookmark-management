@@ -31,6 +31,40 @@ paths:
       summary: Generate a random password
       tags:
       - Password
+  /link/redirect/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the original URL associated with the given code and redirects
+        the client to it.
+      parameters:
+      - description: Shortened URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: Redirects to the original URL
+          schema:
+            type: string
+        "400":
+          description: Code is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Redirect to original URL by code
+      tags:
+      - ShortenURL
   /link/shorten:
     post:
       consumes:

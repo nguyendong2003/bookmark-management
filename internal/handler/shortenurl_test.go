@@ -104,7 +104,115 @@ func TestShortenURLHandler_ShortenURL(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, rec.Code)
 			assert.JSONEq(t, tc.expectedResponse, rec.Body.String())
 			// assert.Equal(t, tc.expectedResponse, rec.Body.String())
+			mockService.AssertExpectations(t)
+		})
+	}
+}
 
+func TestShortenURLHandler_GetURL(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+
+		setupRequest     func(ctx *gin.Context)
+		setupMockService func(ctx context.Context) *mocks.ShortenURL
+
+		expectedStatus   int
+		expectedResponse string
+	}{
+		{
+			name: "normal case - success",
+
+			setupRequest: func(ctx *gin.Context) {
+				ctx.Request = httptest.NewRequest(
+					http.MethodGet,
+					"/link/redirect/123456",
+					nil,
+				)
+				ctx.Params = []gin.Param{{Key: "code", Value: "123456"}}
+			},
+
+			setupMockService: func(ctx context.Context) *mocks.ShortenURL {
+				serviceMock := mocks.NewShortenURL(t)
+				serviceMock.
+					On("GetURL", ctx, "123456").
+					Return("https://www.youtube.com/", nil)
+				return serviceMock
+			},
+
+			expectedStatus:   http.StatusMovedPermanently,
+			expectedResponse: "https://www.youtube.com/",
+		},
+		{
+			name: "fail case - service failed",
+
+			setupRequest: func(ctx *gin.Context) {
+				ctx.Request = httptest.NewRequest(
+					http.MethodGet,
+					"/link/redirect/123456",
+					nil,
+				)
+				ctx.Params = []gin.Param{{Key: "code", Value: "123456"}}
+			},
+
+			setupMockService: func(ctx context.Context) *mocks.ShortenURL {
+				serviceMock := mocks.NewShortenURL(t)
+				serviceMock.
+					On("GetURL", ctx, "123456").
+					Return("", testErr)
+				return serviceMock
+			},
+
+			expectedStatus:   http.StatusInternalServerError,
+			expectedResponse: `{"error":"Internal server error"}`,
+		},
+		{
+			name: "fail case - bad input",
+
+			setupRequest: func(ctx *gin.Context) {
+				ctx.Request = httptest.NewRequest(
+					http.MethodGet,
+					"/link/redirect/",
+					nil,
+				)
+				ctx.Params = []gin.Param{{Key: "code", Value: ""}}
+			},
+
+			setupMockService: func(ctx context.Context) *mocks.ShortenURL {
+				return mocks.NewShortenURL(t)
+			},
+
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: `{"error":"Code is required"}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			rec := httptest.NewRecorder()
+			gc, _ := gin.CreateTestContext(rec)
+
+			tc.setupRequest(gc)
+
+			mockService := tc.setupMockService(gc)
+			testHandler := NewShortenURL(mockService)
+
+			testHandler.GetURL(gc)
+
+			assert.Equal(t, tc.expectedStatus, rec.Code)
+
+			if rec.Code == http.StatusMovedPermanently {
+				assert.Equal(t, tc.expectedResponse, rec.Header().Get("Location"))
+			} else {
+				assert.JSONEq(t, tc.expectedResponse, rec.Body.String())
+			}
+
+			mockService.AssertExpectations(t)
 		})
 	}
 }

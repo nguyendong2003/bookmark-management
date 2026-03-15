@@ -41,6 +41,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/link/redirect/{code}": {
+            "get": {
+                "description": "Retrieves the original URL associated with the given code and redirects the client to it.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShortenURL"
+                ],
+                "summary": "Redirect to original URL by code",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shortened URL code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "Redirects to the original URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Code is required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/link/shorten": {
             "post": {
                 "description": "Create a short key for the provided URL",

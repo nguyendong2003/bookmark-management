@@ -58,5 +58,6 @@ func (e *engine) initRoutes() {
 	// register handlers to endpoints
 	e.app.GET("/gen-pass", passwordHandler.GenPass)
 	e.app.POST("/link/shorten", shortenURLHandler.ShortenURL)
+	e.app.GET("/link/redirect/:code", shortenURLHandler.GetURL)
 	e.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

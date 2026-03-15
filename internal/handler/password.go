@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nguyendong2003/bookmark-management/internal/service"
+	"github.com/rs/zerolog/log"
 )
 
 type Password interface {
@@ -32,6 +33,8 @@ func NewPassword(passwordService service.Password) Password {
 func (h *passwordHandler) GenPass(c *gin.Context) {
 	password, err := h.passwordService.GeneratePassword()
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to generate password")
+
 		// c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate password"})
 		c.String(http.StatusInternalServerError, err.Error())
 		return
