@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/nguyendong2003/bookmark-management/docs"
 	"github.com/nguyendong2003/bookmark-management/internal/handler"
@@ -46,6 +47,9 @@ func (e *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *engine) initRoutes() {
+	// Default CORS middleware
+	e.app.Use(cors.Default())
+
 	// create handlers
 	passwordService := service.NewPassword()
 	passwordHandler := handler.NewPassword(passwordService)

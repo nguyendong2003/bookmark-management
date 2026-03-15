@@ -15,3 +15,10 @@ test:
 	grep -vE "$(COVERAGE_EXCLUDE)" coverage.tmp > coverage.out
 	go tool cover -html=coverage.out -o coverage.html
 	rm coverage.tmp coverage.out
+
+up:
+	docker compose down
+	docker compose up --build -d
+
+down:
+	docker compose down

@@ -6,7 +6,6 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8080",
     "basePath": "/",
     "paths": {
         "/gen-pass": {
@@ -37,7 +36,7 @@
         },
         "/link/redirect/{code}": {
             "get": {
-                "description": "Retrieves the original URL associated with the given code and redirects the client to it.",
+                "description": "Retrieves the original URL associated with the given code. Browser clients are redirected (301); API/JSON clients receive the URL in the response body.",
                 "consumes": [
                     "application/json"
                 ],
@@ -58,14 +57,23 @@
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Returns original URL (API/JSON client)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "301": {
-                        "description": "Redirects to the original URL",
+                        "description": "Redirects to the original URL (browser)",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "400": {
-                        "description": "Code is required",
+                        "description": "Code is required or not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

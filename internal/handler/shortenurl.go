@@ -58,13 +58,14 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 
 // GetURL godoc
 // @Summary      Redirect to original URL by code
-// @Description  Retrieves the original URL associated with the given code and redirects the client to it.
+// @Description  Retrieves the original URL associated with the given code. Browser clients are redirected (301); API/JSON clients receive the URL in the response body.
 // @Tags         ShortenURL
 // @Accept       json
 // @Produce      json
 // @Param        code   path      string  true  "Shortened URL code"
-// @Success      301    {string}  string  "Redirects to the original URL"
-// @Failure      400    {object}  map[string]string  "Code is required"
+// @Success      301    {string}  string  "Redirects to the original URL (browser)"
+// @Success      200    {object}  map[string]string  "Returns original URL (API/JSON client)"
+// @Failure      400    {object}  map[string]string  "Code is required or not found"
 // @Failure      500    {object}  map[string]string  "Internal server error"
 // @Router       /link/redirect/{code} [get]
 func (h *shortenURLHandler) GetURL(c *gin.Context) {
@@ -87,6 +88,16 @@ func (h *shortenURLHandler) GetURL(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
-	// redirect client to url
+
+	// Thêm dòng này để có response trả về khi test trên swagger UI hoặc API client, tránh lỗi CORS do fetch() tự động theo dõi redirects.
+	// If client accepts JSON (e.g. Swagger UI, API clients), return URL in body
+	// to avoid CORS issues caused by fetch() auto-following cross-origin redirects.
+	// Browser navigation (Accept: text/html) gets the normal 301 redirect.
+	if c.GetHeader("Accept") == "application/json" {
+		c.JSON(http.StatusOK, gin.H{"url": url})
+		return
+	}
+
+	// redirect browser client to url
 	c.Redirect(http.StatusMovedPermanently, url)
 }

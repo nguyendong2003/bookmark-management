@@ -7,7 +7,6 @@ definitions:
     required:
     - url
     type: object
-host: localhost:8080
 info:
   contact: {}
   description: This is the API documentation for the Bookmark Management Service.
@@ -35,8 +34,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves the original URL associated with the given code and redirects
-        the client to it.
+      description: Retrieves the original URL associated with the given code. Browser
+        clients are redirected (301); API/JSON clients receive the URL in the response
+        body.
       parameters:
       - description: Shortened URL code
         in: path
@@ -46,12 +46,18 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: Returns original URL (API/JSON client)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "301":
-          description: Redirects to the original URL
+          description: Redirects to the original URL (browser)
           schema:
             type: string
         "400":
-          description: Code is required
+          description: Code is required or not found
           schema:
             additionalProperties:
               type: string

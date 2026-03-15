@@ -43,7 +43,7 @@ const docTemplate = `{
         },
         "/link/redirect/{code}": {
             "get": {
-                "description": "Retrieves the original URL associated with the given code and redirects the client to it.",
+                "description": "Retrieves the original URL associated with the given code. Browser clients are redirected (301); API/JSON clients receive the URL in the response body.",
                 "consumes": [
                     "application/json"
                 ],
@@ -64,14 +64,23 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Returns original URL (API/JSON client)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "301": {
-                        "description": "Redirects to the original URL",
+                        "description": "Redirects to the original URL (browser)",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "400": {
-                        "description": "Code is required",
+                        "description": "Code is required or not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -165,7 +174,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Bookmark Management API",

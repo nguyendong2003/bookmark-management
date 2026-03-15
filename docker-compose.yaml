@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    command: ["redis-server", "--requirepass", "123456"]
+    networks:
+      - bookmark_network
+    restart: unless-stopped
+
+  bookmark_service:
+    build: .
+    container_name: bookmark
+    ports:
+      - "9000:8080"
+    environment:
+      - REDIS_ADDRESS=redis:6379
+      - REDIS_PASSWORD=123456
+      - REDIS_DB=0
+    networks:
+      - bookmark_network
+    restart: unless-stopped
+
+# Đặt tên cho networks (optional, không cần thiết, xóa đoạn này đi cũng được)
+networks:
+  bookmark_network:
+    driver: bridge

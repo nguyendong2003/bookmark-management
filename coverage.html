@@ -61,7 +61,7 @@
 				
 				<option value="file2">github.com/nguyendong2003/bookmark-management/internal/handler/password.go (100.0%)</option>
 				
-				<option value="file3">github.com/nguyendong2003/bookmark-management/internal/handler/shortenurl.go (91.7%)</option>
+				<option value="file3">github.com/nguyendong2003/bookmark-management/internal/handler/shortenurl.go (85.2%)</option>
 				
 				<option value="file4">github.com/nguyendong2003/bookmark-management/internal/repository/urlstorage.go (100.0%)</option>
 				
@@ -95,6 +95,7 @@ import (
         "fmt"
         "net/http"
 
+        "github.com/gin-contrib/cors"
         "github.com/gin-gonic/gin"
         _ "github.com/nguyendong2003/bookmark-management/docs"
         "github.com/nguyendong2003/bookmark-management/internal/handler"
@@ -137,6 +138,9 @@ func (e *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) <span class="
 }</span>
 
 func (e *engine) initRoutes() <span class="cov0" title="0">{
+        // Default CORS middleware
+        e.app.Use(cors.Default())
+
         // create handlers
         passwordService := service.NewPassword()
         passwordHandler := handler.NewPassword(passwordService)
@@ -279,13 +283,14 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov8" title=
 
 // GetURL godoc
 // @Summary      Redirect to original URL by code
-// @Description  Retrieves the original URL associated with the given code and redirects the client to it.
+// @Description  Retrieves the original URL associated with the given code. Browser clients are redirected (301); API/JSON clients receive the URL in the response body.
 // @Tags         ShortenURL
 // @Accept       json
 // @Produce      json
 // @Param        code   path      string  true  "Shortened URL code"
-// @Success      301    {string}  string  "Redirects to the original URL"
-// @Failure      400    {object}  map[string]string  "Code is required"
+// @Success      301    {string}  string  "Redirects to the original URL (browser)"
+// @Success      200    {object}  map[string]string  "Returns original URL (API/JSON client)"
+// @Failure      400    {object}  map[string]string  "Code is required or not found"
 // @Failure      500    {object}  map[string]string  "Internal server error"
 // @Router       /link/redirect/{code} [get]
 func (h *shortenURLHandler) GetURL(c *gin.Context) <span class="cov8" title="1">{
@@ -308,7 +313,17 @@ func (h *shortenURLHandler) GetURL(c *gin.Context) <span class="cov8" title="1">
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
                 return</span>
         }
-        // redirect client to url
+
+        // Thêm dòng này để có response trả về khi test trên swagger UI hoặc API client, tránh lỗi CORS do fetch() tự động theo dõi redirects.
+        // If client accepts JSON (e.g. Swagger UI, API clients), return URL in body
+        // to avoid CORS issues caused by fetch() auto-following cross-origin redirects.
+        // Browser navigation (Accept: text/html) gets the normal 301 redirect.
+        <span class="cov8" title="1">if c.GetHeader("Accept") == "application/json" </span><span class="cov0" title="0">{
+                c.JSON(http.StatusOK, gin.H{"url": url})
+                return
+        }</span>
+
+        // redirect browser client to url
         <span class="cov8" title="1">c.Redirect(http.StatusMovedPermanently, url)</span>
 }
 </pre>
@@ -500,9 +515,9 @@ func NewClient(envPrefix string) (*redis.Client, error) <span class="cov0" title
 import "github.com/kelseyhightower/envconfig"
 
 type config struct {
-        Address  string `default:"localhost:6379" envConfig:"REDIS_ADDRESS"`
-        Password string `default:"" envConfig:"REDIS_PASSWORD"`
-        DB       int    `default:"0" envConfig:"REDIS_DB"`
+        Address  string `default:"localhost:6379" envconfig:"REDIS_ADDRESS"`
+        Password string `default:"" envconfig:"REDIS_PASSWORD"`
+        DB       int    `default:"0" envconfig:"REDIS_DB"`
 }
 
 func newConfig(envPrefix string) (*config, error) <span class="cov0" title="0">{

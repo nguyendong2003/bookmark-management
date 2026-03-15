@@ -1,6 +1,7 @@
 package main
 
 import (
+	docs "github.com/nguyendong2003/bookmark-management/docs"
 	"github.com/nguyendong2003/bookmark-management/internal/api"
 	"github.com/nguyendong2003/bookmark-management/pkg/logger"
 	redisPkg "github.com/nguyendong2003/bookmark-management/pkg/redis"
@@ -9,10 +10,12 @@ import (
 // @title Bookmark Management API
 // @version 1.0
 // @description This is the API documentation for the Bookmark Management Service.
-// @host localhost:8080
 // @BasePath /
 func main() {
 	logger.SetLogLevel()
+
+	// Use the same host/port as current request (works with docker port mapping changes)
+	docs.SwaggerInfo.Host = ""
 
 	cfg, err := api.NewConfig("BOOKMARK_SERVICE")
 	if err != nil {
