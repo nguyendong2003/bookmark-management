@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestURLStorage(t *testing.T) {
+func TestURLStorage_StoreURL(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {

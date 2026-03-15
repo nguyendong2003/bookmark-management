@@ -1,4 +1,12 @@
 basePath: /
+definitions:
+  handler.shortenURLRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -23,4 +31,40 @@ paths:
       summary: Generate a random password
       tags:
       - Password
+  /link/shorten:
+    post:
+      consumes:
+      - application/json
+      description: Create a short key for the provided URL
+      parameters:
+      - description: URL to shorten
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.shortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Shortened key
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Shorten a URL
+      tags:
+      - ShortenURL
 swagger: "2.0"
