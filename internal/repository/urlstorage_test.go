@@ -53,7 +53,9 @@ func TestURLStorage_StoreURL(t *testing.T) {
 			testRepo := NewURLStorage(redisClient)
 
 			err := testRepo.StoreURL(ctx, tc.inputCode, tc.inputURL)
-			if err == nil {
+
+			assert.Equal(t, tc.expectedErr, err)
+			if err == nil && tc.verifyFunc != nil {
 				tc.verifyFunc(ctx, redisClient, tc.inputCode, tc.inputURL)
 			}
 

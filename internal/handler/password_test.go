@@ -32,12 +32,6 @@ func TestPasswordHandler_GenPass(t *testing.T) {
 
 			setupMockService: func() *mocks.Password {
 				serviceMock := mocks.NewPassword(t)
-
-				// Viết mock cho phương thức "GenPass" của interface Password trong package handler.
-				// Vì phương thức này gọi phương thức "GeneratePassword" của interface Password trong package service, nên cần tạo mock service
-				// "GeneratePassword" là tên của method của interface Password trong package service (nằm ở file password_service.go),
-				// và "Return" là phương thức của mock để định nghĩa giá trị trả về khi method đó được gọi.
-				// Hàm "GeneratePassword" của interface Password trong package service trả về (string, error), nên chúng ta cần cung cấp hai giá trị trong "Return": một chuỗi đại diện cho mật khẩu được tạo ra và một giá trị lỗi (ở đây là nil để biểu thị không có lỗi).
 				serviceMock.On("GeneratePassword").Return("123456789", nil)
 				return serviceMock
 			},

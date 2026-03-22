@@ -69,14 +69,12 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 // @Failure      500    {object}  map[string]string  "Internal server error"
 // @Router       /link/redirect/{code} [get]
 func (h *shortenURLHandler) GetURL(c *gin.Context) {
-	// get input
 	code := c.Param("code")
 	if code == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
 		return
 	}
 
-	// call service <input:code>  --> url
 	url, err := h.shortenURLService.GetURL(c, code)
 	if err != nil {
 		if errors.Is(err, service.ErrCodeNotExist) {

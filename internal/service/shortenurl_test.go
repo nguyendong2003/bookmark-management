@@ -10,7 +10,6 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestShortenURLService_ShortenURL(t *testing.T) {
@@ -19,20 +18,29 @@ func TestShortenURLService_ShortenURL(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		setupMock func(repo *repoMocks.URLStorage, pass *serviceMocks.Password)
+		setupRepo    func(ctx context.Context) *repoMocks.URLStorage
+		setupCodeGen func(ctx context.Context) *serviceMocks.Password
 
 		expectedCode string
 		expectedErr  error
 	}{
 		{
-			name: "success",
+			name: "normal case - new key",
 
-			setupMock: func(repo *repoMocks.URLStorage, pass *serviceMocks.Password) {
-				pass.On("GeneratePassword").
-					Return("abc1234567", nil)
+			setupRepo: func(ctx context.Context) *repoMocks.URLStorage {
+				mock := repoMocks.NewURLStorage(t)
 
-				repo.On("StoreURL", mock.Anything, "abc1234567", "https://google.com").
-					Return(nil)
+				mock.On("StoreURL", ctx, "abc1234567", "https://google.com").Return(nil)
+
+				return mock
+			},
+
+			setupCodeGen: func(ctx context.Context) *serviceMocks.Password {
+				mock := serviceMocks.NewPassword(t)
+
+				mock.On("GeneratePassword").Return("abc1234567", nil)
+
+				return mock
 			},
 
 			expectedCode: "abc1234567",
@@ -41,9 +49,17 @@ func TestShortenURLService_ShortenURL(t *testing.T) {
 		{
 			name: "password generate error",
 
-			setupMock: func(repo *repoMocks.URLStorage, pass *serviceMocks.Password) {
-				pass.On("GeneratePassword").
-					Return("", errors.New("generate error"))
+			setupRepo: func(ctx context.Context) *repoMocks.URLStorage {
+				mock := repoMocks.NewURLStorage(t)
+				return mock
+			},
+
+			setupCodeGen: func(ctx context.Context) *serviceMocks.Password {
+				mock := serviceMocks.NewPassword(t)
+
+				mock.On("GeneratePassword").Return("", errors.New("generate error"))
+
+				return mock
 			},
 
 			expectedCode: "",
@@ -52,12 +68,18 @@ func TestShortenURLService_ShortenURL(t *testing.T) {
 		{
 			name: "repository store error",
 
-			setupMock: func(repo *repoMocks.URLStorage, pass *serviceMocks.Password) {
-				pass.On("GeneratePassword").
-					Return("abc1234567", nil)
+			setupRepo: func(ctx context.Context) *repoMocks.URLStorage {
+				mock := repoMocks.NewURLStorage(t)
 
-				repo.On("StoreURL", mock.Anything, "abc1234567", "https://google.com").
-					Return(errors.New("redis error"))
+				mock.On("StoreURL", ctx, "abc1234567", "https://google.com").Return(errors.New("redis error"))
+
+				return mock
+			},
+
+			setupCodeGen: func(ctx context.Context) *serviceMocks.Password {
+				mock := serviceMocks.NewPassword(t)
+				mock.On("GeneratePassword").Return("abc1234567", nil)
+				return mock
 			},
 
 			expectedCode: "",
@@ -73,12 +95,10 @@ func TestShortenURLService_ShortenURL(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockRepo := repoMocks.NewURLStorage(t)
-			mockPassword := serviceMocks.NewPassword(t)
+			mockRepo := tc.setupRepo(ctx)
+			mockCodeGen := tc.setupCodeGen(ctx)
 
-			tc.setupMock(mockRepo, mockPassword)
-
-			service := NewShortenURL(mockRepo, mockPassword)
+			service := NewShortenURL(mockRepo, mockCodeGen)
 
 			code, err := service.ShortenURL(ctx, "https://google.com")
 
@@ -91,7 +111,7 @@ func TestShortenURLService_ShortenURL(t *testing.T) {
 			}
 
 			mockRepo.AssertExpectations(t)
-			mockPassword.AssertExpectations(t)
+			mockCodeGen.AssertExpectations(t)
 		})
 	}
 }
@@ -102,7 +122,7 @@ func TestShortenURLService_GetURL(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		setupMock func(repo *repoMocks.URLStorage)
+		setupRepo func(ctx context.Context) *repoMocks.URLStorage
 
 		expectedURL string
 		expectedErr error
@@ -110,9 +130,12 @@ func TestShortenURLService_GetURL(t *testing.T) {
 		{
 			name: "success",
 
-			setupMock: func(repo *repoMocks.URLStorage) {
-				repo.On("GetURL", mock.Anything, "abc").
-					Return("https://google.com", nil)
+			setupRepo: func(ctx context.Context) *repoMocks.URLStorage {
+				mock := repoMocks.NewURLStorage(t)
+
+				mock.On("GetURL", ctx, "abc1234567").Return("https://google.com", nil)
+
+				return mock
 			},
 
 			expectedURL: "https://google.com",
@@ -121,9 +144,12 @@ func TestShortenURLService_GetURL(t *testing.T) {
 		{
 			name: "code not exist",
 
-			setupMock: func(repo *repoMocks.URLStorage) {
-				repo.On("GetURL", mock.Anything, "abc").
-					Return("", redis.Nil)
+			setupRepo: func(ctx context.Context) *repoMocks.URLStorage {
+				mock := repoMocks.NewURLStorage(t)
+
+				mock.On("GetURL", ctx, "abc1234567").Return("", redis.Nil)
+
+				return mock
 			},
 
 			expectedURL: "",
@@ -132,9 +158,12 @@ func TestShortenURLService_GetURL(t *testing.T) {
 		{
 			name: "repository error",
 
-			setupMock: func(repo *repoMocks.URLStorage) {
-				repo.On("GetURL", mock.Anything, "abc").
-					Return("", errors.New("redis error"))
+			setupRepo: func(ctx context.Context) *repoMocks.URLStorage {
+				mock := repoMocks.NewURLStorage(t)
+
+				mock.On("GetURL", ctx, "abc1234567").Return("", errors.New("redis error"))
+
+				return mock
 			},
 
 			expectedURL: "",
@@ -148,15 +177,13 @@ func TestShortenURLService_GetURL(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ctx := context.Background()
+			ctx := t.Context()
 
-			mockRepo := repoMocks.NewURLStorage(t)
-
-			tc.setupMock(mockRepo)
+			mockRepo := tc.setupRepo(ctx)
 
 			service := NewShortenURL(mockRepo, nil)
 
-			url, err := service.GetURL(ctx, "abc")
+			url, err := service.GetURL(ctx, "abc1234567")
 
 			assert.Equal(t, tc.expectedURL, url)
 
