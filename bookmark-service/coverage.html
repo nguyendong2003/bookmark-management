@@ -294,14 +294,12 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov8" title=
 // @Failure      500    {object}  map[string]string  "Internal server error"
 // @Router       /link/redirect/{code} [get]
 func (h *shortenURLHandler) GetURL(c *gin.Context) <span class="cov8" title="1">{
-        // get input
         code := c.Param("code")
         if code == "" </span><span class="cov8" title="1">{
                 c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
                 return
         }</span>
 
-        // call service &lt;input:code&gt;  --&gt; url
         <span class="cov8" title="1">url, err := h.shortenURLService.GetURL(c, code)
         if err != nil </span><span class="cov8" title="1">{
                 if errors.Is(err, service.ErrCodeNotExist) </span><span class="cov0" title="0">{

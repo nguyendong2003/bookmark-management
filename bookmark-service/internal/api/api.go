@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/nguyendong2003/bookmark-management/docs"
+	"github.com/nguyendong2003/bookmark-management/docs"
 	"github.com/nguyendong2003/bookmark-management/internal/handler"
 	"github.com/nguyendong2003/bookmark-management/internal/repository"
 	"github.com/nguyendong2003/bookmark-management/internal/service"
@@ -59,9 +59,15 @@ func (e *engine) initRoutes() {
 	shortenURLService := service.NewShortenURL(urlStorage, passwordService)
 	shortenURLHandler := handler.NewShortenURL(shortenURLService)
 
-	// register handlers to endpoints
-	e.app.GET("/gen-pass", passwordHandler.GenPass)
-	e.app.POST("/link/shorten", shortenURLHandler.ShortenURL)
-	e.app.GET("/link/redirect/:code", shortenURLHandler.GetURL)
+	// Init swagger docs route
+	docs.SwaggerInfo.Host = e.cfg.Hostname
 	e.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// register handlers to endpoints
+	v1Routes := e.app.Group("/v1")
+	{
+		v1Routes.GET("/gen-pass", passwordHandler.GenPass)
+		v1Routes.POST("/links/shorten", shortenURLHandler.ShortenURL)
+		v1Routes.GET("/links/redirect/:code", shortenURLHandler.GetURL)
+	}
 }

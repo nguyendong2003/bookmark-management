@@ -22,3 +22,6 @@ up:
 
 down:
 	docker compose down
+
+docker-build:
+	docker build -t bookmark_service:dev .
