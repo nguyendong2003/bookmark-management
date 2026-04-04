@@ -33,7 +33,7 @@ func TestShortenURLEndpoint(t *testing.T) {
 			setupTestHttp: func(api api.Engine) *httptest.ResponseRecorder {
 				req := httptest.NewRequest(
 					http.MethodPost,
-					"/link/shorten",
+					"/v1/links/shorten",
 					bytes.NewBufferString(`{"url":"https://www.youtube.com/"}`),
 				)
 				// req.Header.Set("Content-Type", "application/json")
@@ -64,7 +64,7 @@ func TestShortenURLEndpoint(t *testing.T) {
 			setupTestHttp: func(api api.Engine) *httptest.ResponseRecorder {
 				req := httptest.NewRequest(
 					http.MethodPost,
-					"/link/shorten",
+					"/v1/links/shorten",
 					bytes.NewBufferString(`{"url":"not a link"}`),
 				)
 				// req.Header.Set("Content-Type", "application/json")
@@ -127,7 +127,7 @@ func TestGetURLEndpoint(t *testing.T) {
 			setupTestHttp: func(api api.Engine) *httptest.ResponseRecorder {
 				req := httptest.NewRequest(
 					http.MethodGet,
-					"/link/redirect/notexist",
+					"/v1/links/redirect/notexist",
 					nil,
 				)
 
@@ -155,7 +155,7 @@ func TestGetURLEndpoint(t *testing.T) {
 				// create shorten url first
 				shortenReq := httptest.NewRequest(
 					http.MethodPost,
-					"/link/shorten",
+					"/v1/links/shorten",
 					bytes.NewBufferString(`{"url":"https://www.youtube.com/"}`),
 				)
 
@@ -173,7 +173,7 @@ func TestGetURLEndpoint(t *testing.T) {
 				// call redirect endpoint with code
 				redirectReq := httptest.NewRequest(
 					http.MethodGet,
-					"/link/redirect/"+key,
+					"/v1/links/redirect/" + key,
 					nil,
 				)
 

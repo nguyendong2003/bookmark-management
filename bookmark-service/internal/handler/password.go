@@ -29,7 +29,7 @@ func NewPassword(passwordService service.Password) Password {
 // @Produce plain
 // @Success 200 {string} string "Generated password"
 // @Failure 500 {string} string "Failed to generate password"
-// @Router /gen-pass [get]
+// @Router /v1/gen-pass [get]
 func (h *passwordHandler) GenPass(c *gin.Context) {
 	password, err := h.passwordService.GeneratePassword()
 	if err != nil {

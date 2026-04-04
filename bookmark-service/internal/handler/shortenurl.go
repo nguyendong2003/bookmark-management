@@ -38,7 +38,7 @@ func NewShortenURL(shortenURLService service.ShortenURL) ShortenURL {
 // @Success 200 {object} map[string]string "Shortened key"
 // @Failure 400 {object} map[string]string "Invalid input"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /link/shorten [post]
+// @Router /v1/links/shorten [post]
 func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 	req := &shortenURLRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
@@ -67,7 +67,7 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) {
 // @Success      200    {object}  map[string]string  "Returns original URL (API/JSON client)"
 // @Failure      400    {object}  map[string]string  "Code is required or not found"
 // @Failure      500    {object}  map[string]string  "Internal server error"
-// @Router       /link/redirect/{code} [get]
+// @Router       /v1/links/redirect/{code} [get]
 func (h *shortenURLHandler) GetURL(c *gin.Context) {
 	code := c.Param("code")
 	if code == "" {

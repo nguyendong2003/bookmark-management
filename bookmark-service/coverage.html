@@ -97,7 +97,7 @@ import (
 
         "github.com/gin-contrib/cors"
         "github.com/gin-gonic/gin"
-        _ "github.com/nguyendong2003/bookmark-management/docs"
+        "github.com/nguyendong2003/bookmark-management/docs"
         "github.com/nguyendong2003/bookmark-management/internal/handler"
         "github.com/nguyendong2003/bookmark-management/internal/repository"
         "github.com/nguyendong2003/bookmark-management/internal/service"
@@ -150,12 +150,18 @@ func (e *engine) initRoutes() <span class="cov0" title="0">{
         shortenURLService := service.NewShortenURL(urlStorage, passwordService)
         shortenURLHandler := handler.NewShortenURL(shortenURLService)
 
-        // register handlers to endpoints
-        e.app.GET("/gen-pass", passwordHandler.GenPass)
-        e.app.POST("/link/shorten", shortenURLHandler.ShortenURL)
-        e.app.GET("/link/redirect/:code", shortenURLHandler.GetURL)
+        // Init swagger docs route
+        docs.SwaggerInfo.Host = e.cfg.Hostname
         e.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-}</span>
+
+        // register handlers to endpoints
+        v1Routes := e.app.Group("/v1")
+        </span><span class="cov0" title="0">{
+                v1Routes.GET("/gen-pass", passwordHandler.GenPass)
+                v1Routes.POST("/links/shorten", shortenURLHandler.ShortenURL)
+                v1Routes.GET("/links/redirect/:code", shortenURLHandler.GetURL)
+        }</span>
+}
 </pre>
 		
 		<pre class="file" id="file1" style="display: none">package api
@@ -163,7 +169,8 @@ func (e *engine) initRoutes() <span class="cov0" title="0">{
 import "github.com/kelseyhightower/envconfig"
 
 type Config struct {
-        AppPort string `default:"8080" envconfig:"APP_PORT"`
+        AppPort  string `default:"8080" envconfig:"APP_PORT"`
+        Hostname string `default:"localhost:8080" envconfig:"APP_HOSTNAME"`
 }
 
 func NewConfig(envPrefix string) (*Config, error) <span class="cov0" title="0">{
@@ -206,7 +213,7 @@ func NewPassword(passwordService service.Password) Password <span class="cov8" t
 // @Produce plain
 // @Success 200 {string} string "Generated password"
 // @Failure 500 {string} string "Failed to generate password"
-// @Router /gen-pass [get]
+// @Router /v1/gen-pass [get]
 func (h *passwordHandler) GenPass(c *gin.Context) <span class="cov8" title="1">{
         password, err := h.passwordService.GeneratePassword()
         if err != nil </span><span class="cov8" title="1">{
@@ -263,7 +270,7 @@ func NewShortenURL(shortenURLService service.ShortenURL) ShortenURL <span class=
 // @Success 200 {object} map[string]string "Shortened key"
 // @Failure 400 {object} map[string]string "Invalid input"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /link/shorten [post]
+// @Router /v1/links/shorten [post]
 func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov8" title="1">{
         req := &amp;shortenURLRequest{}
         if err := c.ShouldBindJSON(req); err != nil </span><span class="cov8" title="1">{
@@ -292,7 +299,7 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov8" title=
 // @Success      200    {object}  map[string]string  "Returns original URL (API/JSON client)"
 // @Failure      400    {object}  map[string]string  "Code is required or not found"
 // @Failure      500    {object}  map[string]string  "Internal server error"
-// @Router       /link/redirect/{code} [get]
+// @Router       /v1/links/redirect/{code} [get]
 func (h *shortenURLHandler) GetURL(c *gin.Context) <span class="cov8" title="1">{
         code := c.Param("code")
         if code == "" </span><span class="cov8" title="1">{

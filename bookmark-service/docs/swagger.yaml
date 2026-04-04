@@ -13,7 +13,7 @@ info:
   title: Bookmark Management API
   version: "1.0"
 paths:
-  /gen-pass:
+  /v1/gen-pass:
     get:
       description: Generate a random password with specified criteria
       produces:
@@ -30,7 +30,7 @@ paths:
       summary: Generate a random password
       tags:
       - Password
-  /link/redirect/{code}:
+  /v1/links/redirect/{code}:
     get:
       consumes:
       - application/json
@@ -71,7 +71,7 @@ paths:
       summary: Redirect to original URL by code
       tags:
       - ShortenURL
-  /link/shorten:
+  /v1/links/shorten:
     post:
       consumes:
       - application/json

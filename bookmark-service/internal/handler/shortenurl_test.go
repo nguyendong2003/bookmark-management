@@ -33,7 +33,7 @@ func TestShortenURLHandler_ShortenURL(t *testing.T) {
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(
 					http.MethodPost,
-					"/link/shorten",
+					"/v1/links/shorten",
 					bytes.NewBuffer([]byte(`{"url":"https://www.youtube.com/"}`)),
 				)
 			},
@@ -53,7 +53,7 @@ func TestShortenURLHandler_ShortenURL(t *testing.T) {
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(
 					http.MethodPost,
-					"/link/shorten",
+					"/v1/links/shorten",
 					bytes.NewBuffer([]byte(`{"url":"https://www.youtube.com/"}`)),
 				)
 			},
@@ -73,7 +73,7 @@ func TestShortenURLHandler_ShortenURL(t *testing.T) {
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(
 					http.MethodPost,
-					"/link/shorten",
+					"/v1/links/shorten",
 					bytes.NewBuffer([]byte(`{"url":"not a link"}`)),
 				)
 			},
@@ -127,7 +127,7 @@ func TestShortenURLHandler_GetURL(t *testing.T) {
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(
 					http.MethodGet,
-					"/link/redirect/123456",
+					"/v1/links/redirect/123456",
 					nil,
 				)
 				ctx.Params = []gin.Param{{Key: "code", Value: "123456"}}
@@ -150,7 +150,7 @@ func TestShortenURLHandler_GetURL(t *testing.T) {
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(
 					http.MethodGet,
-					"/link/redirect/123456",
+					"/v1/links/redirect/123456",
 					nil,
 				)
 				ctx.Params = []gin.Param{{Key: "code", Value: "123456"}}
@@ -173,7 +173,7 @@ func TestShortenURLHandler_GetURL(t *testing.T) {
 			setupRequest: func(ctx *gin.Context) {
 				ctx.Request = httptest.NewRequest(
 					http.MethodGet,
-					"/link/redirect/",
+					"/v1/links/redirect/",
 					nil,
 				)
 				ctx.Params = []gin.Param{{Key: "code", Value: ""}}

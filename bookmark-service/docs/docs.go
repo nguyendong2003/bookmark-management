@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/gen-pass": {
+        "/v1/gen-pass": {
             "get": {
                 "description": "Generate a random password with specified criteria",
                 "produces": [
@@ -41,7 +41,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/link/redirect/{code}": {
+        "/v1/links/redirect/{code}": {
             "get": {
                 "description": "Retrieves the original URL associated with the given code. Browser clients are redirected (301); API/JSON clients receive the URL in the response body.",
                 "consumes": [
@@ -100,7 +100,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/link/shorten": {
+        "/v1/links/shorten": {
             "post": {
                 "description": "Create a short key for the provided URL",
                 "consumes": [

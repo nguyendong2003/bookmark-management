@@ -27,7 +27,7 @@ func TestPasswordHandler_GenPass(t *testing.T) {
 			name: "success",
 
 			setupRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest(http.MethodGet, "/gen-pass", nil)
+				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/gen-pass", nil)
 			},
 
 			setupMockService: func() *mocks.Password {
@@ -43,7 +43,7 @@ func TestPasswordHandler_GenPass(t *testing.T) {
 			name: "internal server error",
 
 			setupRequest: func(ctx *gin.Context) {
-				ctx.Request = httptest.NewRequest(http.MethodGet, "/gen-pass", nil)
+				ctx.Request = httptest.NewRequest(http.MethodGet, "/v1/gen-pass", nil)
 			},
 
 			setupMockService: func() *mocks.Password {
