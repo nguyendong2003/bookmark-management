@@ -57,7 +57,7 @@
 				
 				<option value="file0">github.com/nguyendong2003/bookmark-management/internal/handler/password.go (100.0%)</option>
 				
-				<option value="file1">github.com/nguyendong2003/bookmark-management/internal/handler/shortenurl.go (85.2%)</option>
+				<option value="file1">github.com/nguyendong2003/bookmark-management/internal/handler/shortenurl.go (92.6%)</option>
 				
 				<option value="file2">github.com/nguyendong2003/bookmark-management/internal/repository/urlstorage.go (100.0%)</option>
 				
@@ -70,8 +70,17 @@
 			<div id="legend">
 				<span>not tracked</span>
 			
-				<span class="cov0">not covered</span>
-				<span class="cov8">covered</span>
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
 			
 			</div>
 		</div>
@@ -95,7 +104,7 @@ type passwordHandler struct {
         passwordService service.Password
 }
 
-func NewPassword(passwordService service.Password) Password <span class="cov8" title="1">{
+func NewPassword(passwordService service.Password) Password <span class="cov10" title="7">{
         return &amp;passwordHandler{
                 passwordService: passwordService,
         }
@@ -109,9 +118,9 @@ func NewPassword(passwordService service.Password) Password <span class="cov8" t
 // @Success 200 {string} string "Generated password"
 // @Failure 500 {string} string "Failed to generate password"
 // @Router /v1/gen-pass [get]
-func (h *passwordHandler) GenPass(c *gin.Context) <span class="cov8" title="1">{
+func (h *passwordHandler) GenPass(c *gin.Context) <span class="cov6" title="3">{
         password, err := h.passwordService.GeneratePassword()
-        if err != nil </span><span class="cov8" title="1">{
+        if err != nil </span><span class="cov1" title="1">{
                 log.Error().Err(err).Msg("Failed to generate password")
 
                 // c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate password"})
@@ -119,7 +128,7 @@ func (h *passwordHandler) GenPass(c *gin.Context) <span class="cov8" title="1">{
                 return
         }</span>
 
-        <span class="cov8" title="1">c.String(http.StatusOK, password)</span>
+        <span class="cov4" title="2">c.String(http.StatusOK, password)</span>
 
         // c.JSON(http.StatusOK, gin.H{"password": password})
 }
@@ -149,7 +158,7 @@ type shortenURLRequest struct {
         URL string `json:"url" binding:"required,url"`
 }
 
-func NewShortenURL(shortenURLService service.ShortenURL) ShortenURL <span class="cov8" title="1">{
+func NewShortenURL(shortenURLService service.ShortenURL) ShortenURL <span class="cov10" title="11">{
         return &amp;shortenURLHandler{
                 shortenURLService: shortenURLService,
         }
@@ -166,21 +175,21 @@ func NewShortenURL(shortenURLService service.ShortenURL) ShortenURL <span class=
 // @Failure 400 {object} map[string]string "Invalid input"
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /v1/links/shorten [post]
-func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov8" title="1">{
+func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov7" title="6">{
         req := &amp;shortenURLRequest{}
-        if err := c.ShouldBindJSON(req); err != nil </span><span class="cov8" title="1">{
+        if err := c.ShouldBindJSON(req); err != nil </span><span class="cov3" title="2">{
                 c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
                 return
         }</span>
 
-        <span class="cov8" title="1">key, err := h.shortenURLService.ShortenURL(c, req.URL)
-        if err != nil </span><span class="cov8" title="1">{
+        <span class="cov6" title="4">key, err := h.shortenURLService.ShortenURL(c, req.URL)
+        if err != nil </span><span class="cov1" title="1">{
                 log.Error().Err(err).Msg("Failed to shorten URL")
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
                 return
         }</span>
 
-        <span class="cov8" title="1">c.JSON(http.StatusOK, gin.H{"key": key})</span>
+        <span class="cov5" title="3">c.JSON(http.StatusOK, gin.H{"key": key})</span>
 }
 
 // GetURL godoc
@@ -195,21 +204,21 @@ func (h *shortenURLHandler) ShortenURL(c *gin.Context) <span class="cov8" title=
 // @Failure      400    {object}  map[string]string  "Code is required or not found"
 // @Failure      500    {object}  map[string]string  "Internal server error"
 // @Router       /v1/links/redirect/{code} [get]
-func (h *shortenURLHandler) GetURL(c *gin.Context) <span class="cov8" title="1">{
+func (h *shortenURLHandler) GetURL(c *gin.Context) <span class="cov7" title="5">{
         code := c.Param("code")
-        if code == "" </span><span class="cov8" title="1">{
+        if code == "" </span><span class="cov1" title="1">{
                 c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
                 return
         }</span>
 
-        <span class="cov8" title="1">url, err := h.shortenURLService.GetURL(c, code)
-        if err != nil </span><span class="cov8" title="1">{
-                if errors.Is(err, service.ErrCodeNotExist) </span><span class="cov0" title="0">{
+        <span class="cov6" title="4">url, err := h.shortenURLService.GetURL(c, code)
+        if err != nil </span><span class="cov3" title="2">{
+                if errors.Is(err, service.ErrCodeNotExist) </span><span class="cov1" title="1">{
                         c.JSON(http.StatusBadRequest, gin.H{"error": "Code not exist"})
                         return
                 }</span>
 
-                <span class="cov8" title="1">log.Error().Err(err).Msg("Failed to get URL")
+                <span class="cov1" title="1">log.Error().Err(err).Msg("Failed to get URL")
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
                 return</span>
         }
@@ -218,13 +227,13 @@ func (h *shortenURLHandler) GetURL(c *gin.Context) <span class="cov8" title="1">
         // If client accepts JSON (e.g. Swagger UI, API clients), return URL in body
         // to avoid CORS issues caused by fetch() auto-following cross-origin redirects.
         // Browser navigation (Accept: text/html) gets the normal 301 redirect.
-        <span class="cov8" title="1">if c.GetHeader("Accept") == "application/json" </span><span class="cov0" title="0">{
+        <span class="cov3" title="2">if c.GetHeader("Accept") == "application/json" </span><span class="cov0" title="0">{
                 c.JSON(http.StatusOK, gin.H{"url": url})
                 return
         }</span>
 
         // redirect browser client to url
-        <span class="cov8" title="1">c.Redirect(http.StatusMovedPermanently, url)</span>
+        <span class="cov3" title="2">c.Redirect(http.StatusMovedPermanently, url)</span>
 }
 </pre>
 		
@@ -251,17 +260,17 @@ type urlStorage struct {
         redisClient *redis.Client
 }
 
-func NewURLStorage(redisClient *redis.Client) URLStorage <span class="cov8" title="1">{
+func NewURLStorage(redisClient *redis.Client) URLStorage <span class="cov10" title="8">{
         return &amp;urlStorage{
                 redisClient: redisClient,
         }
 }</span>
 
-func (s *urlStorage) StoreURL(ctx context.Context, code, url string) error <span class="cov8" title="1">{
+func (s *urlStorage) StoreURL(ctx context.Context, code, url string) error <span class="cov5" title="3">{
         return s.redisClient.Set(ctx, code, url, urlExpTime).Err()
 }</span>
 
-func (s *urlStorage) GetURL(ctx context.Context, code string) (string, error) <span class="cov8" title="1">{
+func (s *urlStorage) GetURL(ctx context.Context, code string) (string, error) <span class="cov7" title="4">{
         return s.redisClient.Get(ctx, code).Result()
 }</span>
 </pre>
@@ -289,22 +298,22 @@ type Password interface {
 type passwordService struct {
 }
 
-func NewPassword() Password <span class="cov8" title="1">{
+func NewPassword() Password <span class="cov5" title="6">{
         return &amp;passwordService{}
 }</span>
 
-func (s *passwordService) GeneratePassword() (string, error) <span class="cov8" title="1">{
+func (s *passwordService) GeneratePassword() (string, error) <span class="cov4" title="4">{
         var strBuilder bytes.Buffer
 
-        for i := 0; i &lt; passwordLength; i++ </span><span class="cov8" title="1">{
+        for i := 0; i &lt; passwordLength; i++ </span><span class="cov10" title="40">{
                 randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
                 if err != nil </span><span class="cov0" title="0">{
                         return "", err
                 }</span>
-                <span class="cov8" title="1">strBuilder.WriteByte(charset[randomIndex.Int64()])</span>
+                <span class="cov10" title="40">strBuilder.WriteByte(charset[randomIndex.Int64()])</span>
         }
 
-        <span class="cov8" title="1">return strBuilder.String(), nil</span>
+        <span class="cov4" title="4">return strBuilder.String(), nil</span>
 }
 </pre>
 		
@@ -329,41 +338,41 @@ type shortenURLService struct {
         codeGen    Password
 }
 
-func NewShortenURL(urlStorage repository.URLStorage, codeGen Password) ShortenURL <span class="cov8" title="1">{
+func NewShortenURL(urlStorage repository.URLStorage, codeGen Password) ShortenURL <span class="cov10" title="11">{
         return &amp;shortenURLService{
                 urlStorage: urlStorage,
                 codeGen:    codeGen,
         }
 }</span>
 
-func (s *shortenURLService) ShortenURL(ctx context.Context, url string) (string, error) <span class="cov8" title="1">{
+func (s *shortenURLService) ShortenURL(ctx context.Context, url string) (string, error) <span class="cov7" title="5">{
         // gen code
         code, err := s.codeGen.GeneratePassword()
-        if err != nil </span><span class="cov8" title="1">{
+        if err != nil </span><span class="cov1" title="1">{
                 return "", err
         }</span>
 
         // call repo to save code and url
-        <span class="cov8" title="1">err = s.urlStorage.StoreURL(ctx, code, url)
-        if err != nil </span><span class="cov8" title="1">{
+        <span class="cov6" title="4">err = s.urlStorage.StoreURL(ctx, code, url)
+        if err != nil </span><span class="cov1" title="1">{
                 return "", err
         }</span>
 
-        <span class="cov8" title="1">return code, nil</span>
+        <span class="cov5" title="3">return code, nil</span>
 }
 
 var ErrCodeNotExist = errors.New("code not exist")
 
-func (s *shortenURLService) GetURL(ctx context.Context, code string) (string, error) <span class="cov8" title="1">{
+func (s *shortenURLService) GetURL(ctx context.Context, code string) (string, error) <span class="cov7" title="5">{
         url, err := s.urlStorage.GetURL(ctx, code)
-        if err != nil </span><span class="cov8" title="1">{
-                if errors.Is(err, redis.Nil) </span><span class="cov8" title="1">{
+        if err != nil </span><span class="cov5" title="3">{
+                if errors.Is(err, redis.Nil) </span><span class="cov3" title="2">{
                         return "", ErrCodeNotExist
                 }</span>
-                <span class="cov8" title="1">return "", err</span>
+                <span class="cov1" title="1">return "", err</span>
         }
 
-        <span class="cov8" title="1">return url, nil</span>
+        <span class="cov3" title="2">return url, nil</span>
 }
 </pre>
 		
