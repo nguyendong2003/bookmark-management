@@ -18,7 +18,7 @@ endif
 # Export the tag to be used in other targets
 export IMG_TAG
 
-.PHONY: dev-run swagger run-app test docker-test docker-build
+.PHONY: dev-run swagger run-app test docker-test docker-build build
 
 dev-run:
 	swag init -g cmd/api/main.go
@@ -30,9 +30,11 @@ swagger:
 run-app:
 	go run cmd/api/main.go
 
+build:
+	docker compose build
+
 up:
-	docker compose down
-	docker compose up --build -d
+	docker compose up -d
 
 down:
 	docker compose down

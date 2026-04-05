@@ -6,7 +6,7 @@ services:
     command: redis-server --requirepass ${REDIS_PASSWORD}
 
   bookmark_service:
-    image: bookmark_service:dev
+    image: ${DOCKERHUB_USERNAME}/bookmark_service:dev
     container_name: bookmark_service
     restart: always
     env_file:
@@ -15,7 +15,7 @@ services:
       - redis
 
   bookmark_service_2:
-    image: bookmark_service:dev
+    image: ${DOCKERHUB_USERNAME}/bookmark_service:dev
     container_name: bookmark_service_2
     restart: always
     env_file:
@@ -24,7 +24,7 @@ services:
       - redis
 
   bookmark_service_3:
-    image: bookmark_service:dev
+    image: ${DOCKERHUB_USERNAME}/bookmark_service:dev
     container_name: bookmark_service_3
     restart: always
     env_file:

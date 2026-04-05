@@ -19,6 +19,8 @@ jobs:
 
       - name: Deploy
         working-directory: deployment
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           docker rm -f bookmark_service || true
           docker compose pull bookmark_service
