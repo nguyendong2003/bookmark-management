@@ -30,6 +30,13 @@ swagger:
 run-app:
 	go run cmd/api/main.go
 
+up:
+	docker compose down
+	docker compose up --build -d
+
+down:
+	docker compose down
+
 COVERAGE_EXCLUDE=mocks|main.go|docs|test|cmd|pkg|internal/api
 COVERAGE_THRESHOLD = 80
 
