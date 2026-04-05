@@ -37,16 +37,27 @@ COPY --from=test-exec ${_outputdir}/coverage.out /
 COPY --from=test-exec ${_outputdir}/coverage.html /
 
 # Final stage
-FROM alpine AS final
+FROM alpine:3.20 AS final
 
-ARG app_name=app
 ENV TZ=Asia/Ho_Chi_Minh
-
 WORKDIR /app
 
+# Create user non-root
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy binary + docs
 COPY --from=build /opt/app/bookmark_service /app/bookmark_service
 COPY --from=build /opt/app/docs /app/docs
 
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# Set ownership
+RUN chown -R appuser:appgroup /app
+
+# Set timezone
+RUN apk add --no-cache tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone
+
+# Run as non-root user
+USER appuser
 
 CMD ["/app/bookmark_service"]
